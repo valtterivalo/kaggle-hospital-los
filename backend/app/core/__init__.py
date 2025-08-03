@@ -1,0 +1,1 @@
+"""Core functionality modules including database, logging, and security."""
