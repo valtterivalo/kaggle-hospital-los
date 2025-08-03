@@ -225,13 +225,7 @@ class MLService:
         if self.feature_names is None:
             raise ValueError("Feature names not available. Please train or load model first.")
         
-        # Check if this is the clinical model (has clinical features)
-        is_clinical_model = any('creatinine' in feature or 'glucose' in feature for feature in self.feature_names)
-        
-        if is_clinical_model:
-            return self._prepare_clinical_input(patient_data)
-        else:
-            return self._prepare_legacy_input(patient_data)
+        return self._prepare_clinical_input(patient_data)
     
     def _prepare_clinical_input(self, patient_data: Dict[str, Any]) -> np.ndarray:
         """Prepare input for clinical model with lab values."""
@@ -338,53 +332,6 @@ class MLService:
         input_array = np.array([[input_row.get(feature, 0) for feature in self.feature_names]])
         return input_array
     
-    def _prepare_legacy_input(self, patient_data: Dict[str, Any]) -> np.ndarray:
-        """Prepare input for legacy model format."""
-        input_row = {}
-        
-        # Handle numerical features
-        numerical_mapping = {
-            "age": patient_data.get("age", 50),
-            "billing_amount": patient_data.get("billing_amount", 15000),
-            "room_number": patient_data.get("room_number", 200),
-            "admission_weekday": patient_data.get("admission_weekday", 1),
-            "admission_month": patient_data.get("admission_month", 6),
-        }
-        
-        for feature, value in numerical_mapping.items():
-            if feature in self.feature_names:
-                input_row[feature] = value
-        
-        # Handle categorical features
-        categorical_values = {
-            "gender": patient_data.get("gender", "Male").upper(),
-            "admission_type": patient_data.get("admission_type", "Emergency").title(),
-            "medical_condition": patient_data.get("medical_condition", "Pneumonia").title(),
-            "blood_type": patient_data.get("blood_type", "O+"),
-            "age_group": "adult",
-            "billing_tier": "medium"
-        }
-        
-        # Calculate derived features
-        age = numerical_mapping["age"]
-        if age < 18:
-            categorical_values["age_group"] = "pediatric"
-        elif age >= 65:
-            categorical_values["age_group"] = "senior"
-        
-        # Set all categorical dummy variables to 0 first
-        for feature in self.feature_names:
-            if feature not in input_row:
-                input_row[feature] = 0
-        
-        # Set appropriate dummy variables to 1
-        for category, value in categorical_values.items():
-            dummy_col = f"{category}_{value}"
-            if dummy_col in input_row:
-                input_row[dummy_col] = 1
-        
-        input_array = np.array([[input_row.get(feature, 0) for feature in self.feature_names]])
-        return input_array
     
     def _generate_explanation(self, patient_data: Dict[str, Any], 
                             shap_values: Dict[str, float], prediction: float) -> str:

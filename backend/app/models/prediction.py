@@ -26,18 +26,18 @@ class PatientInput(BaseModel):
     hemo: int = Field(..., ge=0, le=1, description="Blood disorder flag")
     secondarydiagnosisnonicd9: int = Field(..., ge=0, le=10, description="Non-ICD9 secondary diagnoses count")
     
-    # Laboratory Values (continuous)
-    hematocrit: float = Field(..., ge=4.0, le=25.0, description="Hematocrit level (g/dL)")
-    neutrophils: float = Field(..., ge=0.1, le=50.0, description="Neutrophil count (cells/μL)")
-    sodium: int = Field(..., ge=125, le=155, description="Sodium level (mmol/L)")
-    glucose: float = Field(..., ge=2.0, le=20.0, description="Glucose level (mmol/L)")
-    bloodureanitro: int = Field(..., ge=5, le=100, description="Blood urea nitrogen (mg/dL)")
+    # Laboratory Values (continuous) - Updated to match real clinical dataset ranges
+    hematocrit: float = Field(..., ge=4.0, le=50.0, description="Hematocrit level (g/dL)")
+    neutrophils: float = Field(..., ge=0.1, le=300.0, description="Neutrophil count (cells/μL)")
+    sodium: float = Field(..., ge=120.0, le=160.0, description="Sodium level (mmol/L)")
+    glucose: float = Field(..., ge=0.0, le=300.0, description="Glucose level (mmol/L)")
+    bloodureanitro: float = Field(..., ge=1.0, le=700.0, description="Blood urea nitrogen (mg/dL)")
     creatinine: float = Field(..., ge=0.2, le=5.0, description="Creatinine level (mg/dL)")
     
     # Vital Signs (continuous)
     bmi: float = Field(..., ge=15.0, le=50.0, description="Body mass index (kg/m²)")
-    pulse: int = Field(..., ge=40, le=150, description="Heart rate (beats/min)")
-    respiration: int = Field(..., ge=8, le=30, description="Respiratory rate (breaths/min)")
+    pulse: int = Field(..., ge=20, le=150, description="Heart rate (beats/min)")
+    respiration: float = Field(..., ge=0.1, le=30.0, description="Respiratory rate (breaths/min)")
     
     class Config:
         json_schema_extra = {
