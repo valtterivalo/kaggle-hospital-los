@@ -5,40 +5,67 @@ from pydantic import BaseModel, Field
 
 
 class PatientInput(BaseModel):
-    """Input model for clinical patient data used in predictions."""
+    """Input model for complete clinical patient data matching Kaggle dataset schema."""
     
-    age: int = Field(..., ge=0, le=120, description="Patient age in years")
+    # Demographics
     gender: str = Field(..., pattern="^(M|F)$", description="Patient gender (M/F)")
-    facility: str = Field(..., pattern="^[A-E]$", description="Healthcare facility (A-E)")
-    readmissions: int = Field(..., ge=0, le=5, description="Previous readmission count")
-    medical_condition: str = Field(..., description="Primary medical condition")
-    creatinine: float = Field(..., ge=0.2, le=5.0, description="Serum creatinine level (mg/dL)")
-    glucose: int = Field(..., ge=50, le=300, description="Blood glucose level (mg/dL)")
+    facid: int = Field(..., ge=1, le=5, description="Facility ID (1-5)")
+    rcount: int = Field(..., ge=0, le=5, description="Readmissions within 180 days")
+    
+    # Clinical Conditions (binary flags)
+    dialysisrenalendstage: int = Field(..., ge=0, le=1, description="End-stage renal disease flag")
+    asthma: int = Field(..., ge=0, le=1, description="Asthma flag")
+    irondef: int = Field(..., ge=0, le=1, description="Iron deficiency flag")
+    pneum: int = Field(..., ge=0, le=1, description="Pneumonia flag")
+    substancedependence: int = Field(..., ge=0, le=1, description="Substance dependence flag")
+    psychologicaldisordermajor: int = Field(..., ge=0, le=1, description="Major psychological disorder flag")
+    depress: int = Field(..., ge=0, le=1, description="Depression flag")
+    psychother: int = Field(..., ge=0, le=1, description="Other psychological disorder flag")
+    fibrosisandother: int = Field(..., ge=0, le=1, description="Fibrosis and other conditions flag")
+    malnutrition: int = Field(..., ge=0, le=1, description="Malnutrition flag")
+    hemo: int = Field(..., ge=0, le=1, description="Blood disorder flag")
+    secondarydiagnosisnonicd9: int = Field(..., ge=0, le=10, description="Non-ICD9 secondary diagnoses count")
+    
+    # Laboratory Values (continuous)
     hematocrit: float = Field(..., ge=4.0, le=25.0, description="Hematocrit level (g/dL)")
-    bun: int = Field(..., ge=5, le=100, description="Blood urea nitrogen (mg/dL)")
+    neutrophils: float = Field(..., ge=0.1, le=50.0, description="Neutrophil count (cells/μL)")
+    sodium: int = Field(..., ge=125, le=155, description="Sodium level (mmol/L)")
+    glucose: float = Field(..., ge=2.0, le=20.0, description="Glucose level (mmol/L)")
+    bloodureanitro: int = Field(..., ge=5, le=100, description="Blood urea nitrogen (mg/dL)")
+    creatinine: float = Field(..., ge=0.2, le=5.0, description="Creatinine level (mg/dL)")
+    
+    # Vital Signs (continuous)
     bmi: float = Field(..., ge=15.0, le=50.0, description="Body mass index (kg/m²)")
-    pulse: int = Field(..., ge=40, le=150, description="Heart rate (beats per minute)")
-    respiration: int = Field(..., ge=8, le=30, description="Respiratory rate (breaths per minute)")
-    sodium: int = Field(..., ge=125, le=155, description="Serum sodium level (mmol/L)")
-    neutrophils: float = Field(..., ge=0.1, le=50.0, description="Neutrophil count (K/μL)")
+    pulse: int = Field(..., ge=40, le=150, description="Heart rate (beats/min)")
+    respiration: int = Field(..., ge=8, le=30, description="Respiratory rate (breaths/min)")
     
     class Config:
         json_schema_extra = {
             "example": {
-                "age": 65,
                 "gender": "F",
-                "facility": "A",
-                "readmissions": 1,
-                "medical_condition": "Pneumonia",
-                "creatinine": 1.1,
-                "glucose": 120,
+                "facid": 1,
+                "rcount": 1,
+                "dialysisrenalendstage": 0,
+                "asthma": 0,
+                "irondef": 0,
+                "pneum": 1,
+                "substancedependence": 0,
+                "psychologicaldisordermajor": 0,
+                "depress": 0,
+                "psychother": 0,
+                "fibrosisandother": 0,
+                "malnutrition": 0,
+                "hemo": 0,
+                "secondarydiagnosisnonicd9": 2,
                 "hematocrit": 12.0,
-                "bun": 18,
+                "neutrophils": 8.5,
+                "sodium": 140,
+                "glucose": 6.7,
+                "bloodureanitro": 18,
+                "creatinine": 1.1,
                 "bmi": 28.5,
                 "pulse": 80,
-                "respiration": 18,
-                "sodium": 140,
-                "neutrophils": 8.5
+                "respiration": 18
             }
         }
 

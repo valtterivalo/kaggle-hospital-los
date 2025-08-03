@@ -237,30 +237,30 @@ class MLService:
         """Prepare input for clinical model with lab values."""
         input_row = {}
         
-        # Clinical lab values with realistic defaults
+        # Use actual patient data - no more hardcoded defaults!
         clinical_defaults = {
-            'rcount': patient_data.get('readmissions', 0),
-            'dialysisrenalendstage': 0,
-            'asthma': 1 if patient_data.get('medical_condition') == 'Asthma' else 0,
-            'irondef': 0,
-            'pneum': 1 if patient_data.get('medical_condition') == 'Pneumonia' else 0,
-            'substancedependence': 0,
-            'psychologicaldisordermajor': 0,
-            'depress': 0,
-            'psychother': 0,
-            'fibrosisandother': 0,
-            'malnutrition': 0,
-            'hemo': 0,
+            'rcount': patient_data.get('rcount', 0),
+            'dialysisrenalendstage': patient_data.get('dialysisrenalendstage', 0),
+            'asthma': patient_data.get('asthma', 0),
+            'irondef': patient_data.get('irondef', 0),
+            'pneum': patient_data.get('pneum', 0),
+            'substancedependence': patient_data.get('substancedependence', 0),
+            'psychologicaldisordermajor': patient_data.get('psychologicaldisordermajor', 0),
+            'depress': patient_data.get('depress', 0),
+            'psychother': patient_data.get('psychother', 0),
+            'fibrosisandother': patient_data.get('fibrosisandother', 0),
+            'malnutrition': patient_data.get('malnutrition', 0),
+            'hemo': patient_data.get('hemo', 0),
             'hematocrit': patient_data.get('hematocrit', 12.0),
             'neutrophils': patient_data.get('neutrophils', 7.0),
             'sodium': patient_data.get('sodium', 140.0),
-            'glucose': patient_data.get('glucose', 100.0),
-            'bloodureanitro': patient_data.get('bun', 15.0),
+            'glucose': patient_data.get('glucose', 6.7),
+            'bloodureanitro': patient_data.get('bloodureanitro', 15.0),
             'creatinine': patient_data.get('creatinine', 1.0),
             'bmi': patient_data.get('bmi', 25.0),
             'pulse': patient_data.get('pulse', 75),
             'respiration': patient_data.get('respiration', 16.0),
-            'secondarydiagnosisnonicd9': patient_data.get('secondary_diagnoses', 2),
+            'secondarydiagnosisnonicd9': patient_data.get('secondarydiagnosisnonicd9', 2),
         }
         
         # Add clinical defaults
@@ -319,14 +319,15 @@ class MLService:
         
         # Gender encoding
         if 'is_male' in self.feature_names:
-            input_row['is_male'] = 1 if patient_data.get('gender', 'Male').upper() == 'M' else 0
+            input_row['is_male'] = 1 if patient_data.get('gender', 'F').upper() == 'M' else 0
         
-        # Facility encoding (default to facility A)
-        facility_id = patient_data.get('facility', 'A')
-        for facility in ['B', 'C', 'D', 'E']:
-            facility_col = f'facility_{facility}'
+        # Facility encoding (use numeric facid: 1=A, 2=B, 3=C, 4=D, 5=E)
+        facid = patient_data.get('facid', 1)
+        facility_mapping = {2: 'B', 3: 'C', 4: 'D', 5: 'E'}
+        for facility_num, facility_letter in facility_mapping.items():
+            facility_col = f'facility_{facility_letter}'
             if facility_col in self.feature_names:
-                input_row[facility_col] = 1 if facility_id == facility else 0
+                input_row[facility_col] = 1 if facid == facility_num else 0
         
         # Set any missing features to 0
         for feature in self.feature_names:
