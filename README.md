@@ -1,5 +1,7 @@
 # healthcare ai predictor
 
+![Clinical Interface](frontend.png)
+
 clinical length-of-stay prediction using real hospital data. built with Python/FastAPI backend, Next.js frontend, XGBoost model. achieves 97.1% accuracy.
 
 ## what it does
