@@ -1,218 +1,136 @@
-# Healthcare AI Predictor
+# healthcare ai predictor
 
-A clinical decision support system for hospital length-of-stay prediction using real clinical data and advanced machine learning. Built with Python, FastAPI, Next.js, and XGBoost, achieving 97.1% prediction accuracy.
+clinical length-of-stay prediction using real hospital data. built with Python/FastAPI backend, Next.js frontend, XGBoost model. achieves 97.1% accuracy.
 
-## Project Overview
+## what it does
 
-Production-ready healthcare AI system featuring:
-- **Clinical Grade Performance** - 97.1% R² accuracy with real hospital data
-- **Real-time Prediction API** with sub-second response times
-- **Clinical Interface** supporting 25 clinical variables and lab values
-- **Medical Explainability** with SHAP analysis for clinical decision support
-- **Professional Architecture** suitable for healthcare environments
+predicts hospital length of stay from clinical data:
+- lab values (creatinine, glucose, hematocrit, etc)  
+- medical conditions (diabetes, kidney disease, etc)
+- patient demographics and readmission history
+- real-time predictions with medical explanations
 
-## Quick Start
+## quick start
 
-### Prerequisites
+### prerequisites
 - Python 3.12+
 - Node.js 18+
-- uv (Python package manager)
-- pnpm (Node.js package manager)
+- uv (python package manager)
+- pnpm (node package manager)
 
-### One-Command Setup
+### run it
 ```bash
-make setup    # Install dependencies
-make dev      # Start both servers
-# Visit http://localhost:3000 for clinical interface
+./start.sh
 ```
 
-### Manual Setup
+then visit:
+- http://localhost:3000 (clinical interface)
+- http://localhost:8000/docs (api documentation)
 
-#### Backend
+### manual setup
 ```bash
+# backend
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload --port 8000
-```
+uv run uvicorn app.main:app --port 8000
 
-#### Frontend
-```bash
-cd frontend
+# frontend (new terminal)
+cd frontend  
 pnpm install
 pnpm dev
 ```
 
-### Access Points
-- **Clinical Interface**: http://localhost:3000
-- **API Documentation**: http://localhost:8000/docs
-- **Health Check**: http://localhost:8000/api/health/
+## performance
 
-## Architecture
+- **accuracy**: 97.1% R² (explains 97.1% of length-of-stay variance)
+- **precision**: 0.397 days RMSE (~10 hour accuracy)
+- **speed**: sub-200ms prediction response time
+- **data**: trained on 100K real hospital records
 
-```
-Clinical UI           FastAPI Backend        XGBoost Model
-Next.js + React   →   Python + ML Services  →  Clinical Predictions
-shadcn/ui             Pydantic Validation     SHAP Explanations
+## how it works
 
-                    ↓
-               Real Clinical Dataset
-               100K records, 28 features
-               Kaggle LengthOfStay.csv
-```
+1. **input**: 25 clinical variables (lab values, conditions, demographics)
+2. **model**: XGBoost regression with clinical feature engineering
+3. **output**: predicted stay + confidence interval + SHAP explanations
+4. **validation**: feature importance aligns with medical knowledge
 
-## Clinical Features
+### key predictors
+- readmission history (most important)
+- kidney function (creatinine levels)
+- blood chemistry (glucose, hematocrit)
+- comorbidity count
+- vital signs (BMI, pulse, respiration)
 
-### Implemented
-- **Clinical Data Integration**: 100K real hospital records
-- **Lab Value Processing**: Creatinine, glucose, hematocrit, neutrophils, BUN
-- **Medical Condition Flags**: 11 binary condition indicators
-- **Vital Signs**: BMI, pulse, respiration rate
-- **Administrative Data**: Facility codes, readmission history
-- **Feature Engineering**: Clinical ratios, medical thresholds
-- **SHAP Explainability**: Individual prediction explanations
+## api usage
 
-### API Endpoints
-- `POST /api/predictions/single` - Clinical prediction with SHAP values
-- `POST /api/predictions/batch` - Batch clinical predictions
-- `GET /api/predictions/model-info` - Model performance metrics
-- `GET /api/health/` - Service health status
-
-## Clinical Prediction Example
-
-### Input (Clinical Data)
-```json
-{
-  "gender": "M",
-  "facid": 2,
-  "rcount": 1,
-  "dialysisrenalendstage": 0,
-  "asthma": 1,
-  "creatinine": 1.4,
-  "glucose": 165.0,
-  "hematocrit": 32.0,
-  "bmi": 28.5,
-  "pulse": 85
-}
+```bash
+curl -X POST "http://localhost:8000/api/predictions/single" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "gender": "M",
+    "creatinine": 1.4,
+    "glucose": 165.0,
+    "rcount": 1,
+    "asthma": 1
+  }'
 ```
 
-### Response
+response:
 ```json
 {
   "predicted_los": 5.2,
-  "confidence_interval": [4.1, 6.3],
+  "confidence_interval": [4.1, 6.3], 
   "shap_values": {
     "creatinine": 0.31,
     "glucose": 0.18,
     "rcount": 0.15
-  },
-  "explanation": "Elevated creatinine and glucose levels increase predicted stay",
-  "model_version": "v1.0.0"
+  }
 }
 ```
 
-## Model Performance
+## tech stack
 
-- **Algorithm**: XGBoost Regression (optimized with Optuna)
-- **Accuracy**: 97.1% R² (explains 97.1% of length-of-stay variance)
-- **Precision**: RMSE = 0.397 days (~10 hour accuracy)
-- **Training Data**: 80K clinical records
-- **Test Data**: 20K clinical records
-- **Features**: 39 clinical and engineered features
-- **Overfitting Control**: 0.003 train/test gap
+**backend**: Python 3.12, FastAPI, XGBoost, Polars, SHAP, Pydantic  
+**frontend**: Next.js 14, TypeScript, shadcn/ui, Tailwind CSS  
+**data**: 100K hospital records from Kaggle clinical dataset
 
-### Key Clinical Predictors
-1. **Readmission History** - Previous admissions within 180 days
-2. **Comorbidity Count** - Number of concurrent medical conditions
-3. **Kidney Function** - Creatinine levels and kidney dysfunction
-4. **Blood Chemistry** - Glucose, hematocrit, electrolyte levels
-5. **Vital Signs** - BMI, pulse, respiration patterns
+## development
 
-## Technology Stack
+```bash
+# model training/analysis
+uv run jupyter lab notebooks/
 
-### Backend
-- **Python 3.12** - Modern async patterns
-- **FastAPI** - High-performance API framework
-- **XGBoost** - Production ML library
-- **Polars** - High-performance dataframes
-- **SHAP** - Model explainability
-- **Pydantic** - Clinical data validation
-- **uv** - Dependency management
+# testing
+cd backend && uv run pytest
+cd frontend && pnpm test
+```
 
-### Frontend
-- **Next.js 14** - React with app router
-- **TypeScript** - Full type safety
-- **shadcn/ui** - Professional component library
-- **Tailwind CSS** - Clinical UI styling
-- **pnpm** - Package management
-
-## Project Structure
+## files
 
 ```
 healthcare-project/
-├── backend/
-│   ├── app/
-│   │   ├── api/              # FastAPI clinical routes
-│   │   ├── models/           # Clinical data models
-│   │   ├── services/         # ML and data services
-│   │   └── main.py
-│   └── tests/
-├── frontend/
-│   ├── app/                  # Clinical interface
-│   └── components/           # Medical UI components
-├── data/
-│   ├── kaggle-data/          # Real clinical dataset
-│   └── models/               # Trained ML models
-├── notebooks/
-│   └── clinical_model_development.ipynb
-└── _docs/                    # Technical documentation
+├── start.sh                           # startup script
+├── backend/app/                        # FastAPI application  
+├── frontend/app/                       # Next.js interface
+├── data/kaggle-data/                   # clinical dataset
+├── notebooks/clinical_model_development.ipynb
+└── _docs/                              # technical documentation
 ```
 
-## Clinical Compliance
+## data
 
-- **Real Clinical Data** - Kaggle hospital dataset (de-identified)
-- **Medical Validation** - Feature importance aligns with clinical knowledge
-- **Input Validation** - Medical range validation for all lab values
-- **Explainable AI** - SHAP values for clinical decision support
-- **Professional Standards** - Healthcare-grade error handling
+uses real de-identified hospital data from Kaggle:
+- 100,000 patient encounters
+- 28 clinical features including lab values
+- length of stay from 1-17 days
+- medical conditions, demographics, readmission history
 
-## Model Development
+model validates against clinical knowledge - lab values and medical conditions have expected impact on predictions.
 
-The clinical model was developed through systematic experimentation:
+## disclaimer
 
-1. **Real Dataset Integration** - 100K hospital records with 28 clinical features
-2. **Clinical Feature Engineering** - Medical ratios, thresholds, interaction features
-3. **Hyperparameter Optimization** - Optuna-based XGBoost tuning
-4. **Medical Validation** - SHAP analysis confirms clinical knowledge alignment
-5. **Performance Achievement** - 97.1% R² accuracy with medical interpretability
-
-See `notebooks/clinical_model_development.ipynb` for complete development process.
-
-## Development Workflow
-
-```bash
-# Model development
-make notebook           # Start Jupyter for clinical model development
-
-# API development  
-make dev-backend        # Port 8000 - FastAPI server
-make dev-frontend       # Port 3000 - Clinical interface
-
-# Testing
-uv run pytest backend/tests/
-pnpm test
-```
-
-## Documentation
-
-- **Clinical Model**: `notebooks/clinical_model_development.ipynb`
-- **Dataset Documentation**: `_docs/healthcare-ai-dataset.md`
-- **Next Session Plan**: `_docs/NEXT_SESSION_CLEANUP_AND_DOCUMENTATION.md`
-
-## Clinical Disclaimer
-
-This application demonstrates healthcare AI capabilities using real de-identified clinical data. Performance metrics are based on historical data analysis. Any clinical application requires appropriate medical validation, regulatory approval, and healthcare professional oversight.
+demonstration system using de-identified clinical data. not for actual clinical use without proper medical validation and regulatory approval.
 
 ---
 
-**Clinical AI System - Production-Ready Healthcare ML**  
-*Demonstrating 97.1% accuracy clinical predictions with medical explainability*
+**clinical prediction system - 97.1% accuracy**
